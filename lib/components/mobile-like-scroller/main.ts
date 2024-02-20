@@ -10,17 +10,31 @@ enum ScrollDirection {
   XY = 'xy'
 }
 
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'mobile-like-scroller': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & {
+        'data-direction'?: ScrollDirection | `${ScrollDirection}`;
+      }, HTMLElement>;
+    }
+  }
+}
+
+
+
 export class MobileLikeScroller extends HTMLElement {
+  static observedAttributes = ['data-direction'];
+  direction!: ScrollDirection;
+
   eventHandler: EventHandlerClass;
   previousTouchX: [number, number, number];
   previousTouchY: [number, number, number];
   previousTouchTime: [number, number, number];
-  direction: ScrollDirection;
   scrollAtT0: [number, number];
-  inertialTimerInterval: NodeJS.Timeout | undefined;
+  inertialTimerInterval: number | undefined;
   childrenEventListeners: [Element, (e: Event) => void][];
   childEventObject: null;
-  blockChildrenTimeout: NodeJS.Timeout | undefined;
+  blockChildrenTimeout: number | undefined;
   $BlockedInputs: Element[];
 
   constructor() {
@@ -29,16 +43,26 @@ export class MobileLikeScroller extends HTMLElement {
     this.previousTouchX = [0, 0, 0];
     this.previousTouchY = [0, 0, 0];
     this.previousTouchTime = [0, 0, 0];
-    this.direction = (this.dataset.direction as ScrollDirection) || ScrollDirection.XY;
     this.scrollAtT0 = [0, 0];
     this.inertialTimerInterval = undefined;
     this.childrenEventListeners = [];
     this.childEventObject = null;
     this.blockChildrenTimeout = undefined;
     this.$BlockedInputs = [];
+  }
+
+  attributeChangedCallback() {
+    this.direction = (this.dataset.direction as ScrollDirection) || ScrollDirection.XY;
+  }
+
+  connectedCallback() {
+    this.applyStyles();
 
     this.addEventListener('mousedown', (e) => this.touchstart(e));
+  }
 
+  disconnectedCallback() {
+    this.eventHandler.removeAllEventListeners();
   }
 
   applyStyles() {
@@ -57,17 +81,19 @@ export class MobileLikeScroller extends HTMLElement {
         break;
     }
     this.style.cursor = 'grab';
-    this.style['scrollbar-width'] = 'none';
+    // @ts-expect-error - webkit is not in the typings
+    this.style.scrollbarWidth = 'none';
   }
-  touchstart(e) {
+  touchstart(e: MouseEvent) {
     if (e.button === 0) { // Check for left click
       e.preventDefault();
       this.style.cursor = 'grabbing';
       this.previousTouchX = [e.pageX, e.pageX, e.pageX];
       this.previousTouchY = [e.pageY, e.pageY, e.pageY];
       this.previousTouchTime = [Date.now() - 2, Date.now() - 1, Date.now()];
-      this.eventHandler.addEventListener('mousemove.scroller', (e) => this.touchmove(e));
-      this.eventHandler.addEventListener('mouseup.scroller', (e) => this.touchend(e));
+      this.eventHandler.removeAllEventListeners();
+      this.eventHandler.addEventListener('mousemove.scroller', (e) => this.touchmove(e as MouseEvent));
+      this.eventHandler.addEventListener('mouseup.scroller', () => this.touchend());
       this.eventHandler.addEventListener('click.scroller', () => this.click());
       if (this.inertialTimerInterval) {
         clearInterval(this.inertialTimerInterval);
@@ -78,7 +104,11 @@ export class MobileLikeScroller extends HTMLElement {
     }
   }
 
-  touchmove(e) {
+  touchmove(e: MouseEvent) {
+    if (e.buttons === 0) {
+      this.touchend();
+      return;
+    }
     this.previousTouchX = [this.previousTouchX[1], this.previousTouchX[2], e.pageX];
     this.previousTouchY = [this.previousTouchY[1], this.previousTouchY[2], e.pageY];
     this.previousTouchTime = [this.previousTouchTime[1], this.previousTouchTime[2], Date.now()];
@@ -93,7 +123,7 @@ export class MobileLikeScroller extends HTMLElement {
 
   }
 
-  touchend(e) {
+  touchend() {
     this.eventHandler.removeEventListener('mousemove.scroller');
     this.eventHandler.removeEventListener('mouseup.scroller');
     this.style.cursor = '';
@@ -124,7 +154,7 @@ export class MobileLikeScroller extends HTMLElement {
 
   preventChildClicks() {
     this.querySelectorAll('*').forEach((elem) => {
-      let listener = (e) => this.childclick(e);
+      let listener = (e: Event) => this.childclick(e);
       elem.addEventListener('click', listener, true)
       this.childrenEventListeners.push([elem, listener]);
     });
