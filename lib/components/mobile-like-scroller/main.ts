@@ -134,27 +134,21 @@ export class MobileLikeScroller extends HTMLElement {
 
   click() {
     this.eventHandler.removeEventListener('click.scroller');
-    if (this.blockChildrenTimeout === null) {
-      this.childrenEventListeners.forEach((t) => {
-        t[0].removeEventListener('click', t[1], true);
+    this.childrenEventListeners.forEach(([e, handler]) => {
+      e.removeEventListener('click', handler, true);
+    });
+    this.childrenEventListeners = [];
+    setTimeout(() => { // The event for the change is done after the click event, so we need to wait for the click event to be done before re-enabling the inputs
+      this.$BlockedInputs.forEach((input) => {
+        input.removeAttribute('disabled');
       });
-      this.childrenEventListeners = [];
-      setTimeout(() => { // The event for the change is done after the click event, so we need to wait for the click event to be done before re-enabling the inputs
-        this.$BlockedInputs.forEach((input) => {
-          input.removeAttribute('disabled');
-        });
-        this.$BlockedInputs = [];
-      }, 0);
-    }
-    else {
-      clearTimeout(this.blockChildrenTimeout);
-      this.blockChildrenTimeout = undefined;
-    }
+      this.$BlockedInputs = [];
+    }, 0);
   }
 
   preventChildClicks() {
     this.querySelectorAll('*:not([data-ui]):not([data-ui] *)').forEach((elem) => {
-      let listener = (e: Event) => this.childclick(e);
+      let listener = (e: Event) => (e);
       elem.addEventListener('click', listener, true)
       this.childrenEventListeners.push([elem, listener]);
     });
@@ -167,6 +161,7 @@ export class MobileLikeScroller extends HTMLElement {
   }
 
   childclick(e: Event) {
+    e.preventDefault();
     e.stopPropagation();
     this.click();
   }

@@ -69,24 +69,24 @@ class d extends HTMLElement {
     this.eventHandler.removeEventListener("mousemove.scroller"), this.eventHandler.removeEventListener("mouseup.scroller"), this.style.cursor = "", this.scrollAtT0 = [this.scrollLeft, this.scrollTop], this.inertialTimerInterval = setInterval(() => this.inertialmove(), 16), this.dispatchEvent(new Event("initiateinertial"));
   }
   click() {
-    this.eventHandler.removeEventListener("click.scroller"), this.blockChildrenTimeout === null ? (this.childrenEventListeners.forEach((t) => {
-      t[0].removeEventListener("click", t[1], !0);
+    this.eventHandler.removeEventListener("click.scroller"), this.childrenEventListeners.forEach(([t, s]) => {
+      t.removeEventListener("click", s, !0);
     }), this.childrenEventListeners = [], setTimeout(() => {
       this.$BlockedInputs.forEach((t) => {
         t.removeAttribute("disabled");
       }), this.$BlockedInputs = [];
-    }, 0)) : (clearTimeout(this.blockChildrenTimeout), this.blockChildrenTimeout = void 0);
+    }, 0);
   }
   preventChildClicks() {
     this.querySelectorAll("*:not([data-ui]):not([data-ui] *)").forEach((t) => {
-      let s = (e) => this.childclick(e);
+      let s = (e) => e;
       t.addEventListener("click", s, !0), this.childrenEventListeners.push([t, s]);
     }), this.$BlockedInputs = [...this.querySelectorAll("input:not(:disabled)")], this.$BlockedInputs.forEach((t) => {
       t.setAttribute("disabled", "true");
     }), clearInterval(this.blockChildrenTimeout), this.blockChildrenTimeout = void 0;
   }
   childclick(t) {
-    t.stopPropagation(), this.click();
+    t.preventDefault(), t.stopPropagation(), this.click();
   }
   inertialmove() {
     var t = 0, s = 0;
