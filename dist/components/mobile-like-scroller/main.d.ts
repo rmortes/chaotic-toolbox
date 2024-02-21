@@ -39,5 +39,10 @@ export declare class MobileLikeScroller extends HTMLElement {
     preventChildClicks(): void;
     childclick(e: Event): void;
     inertialmove(): void;
+    handleScroll(): void;
+    /**
+     * @param scrollAmount - Array of two numbers, the first is the amount to scroll in the x direction, the second is the amount to scroll in the y direction
+     */
+    applyScroll([scrollLeft, scrollTop]?: [number, number], behavior?: 'auto' | 'smooth'): void;
 }
 export {};

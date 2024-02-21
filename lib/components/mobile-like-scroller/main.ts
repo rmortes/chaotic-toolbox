@@ -20,8 +20,6 @@ declare global {
   }
 }
 
-
-
 export class MobileLikeScroller extends HTMLElement {
   static observedAttributes = ['data-direction'];
   direction!: ScrollDirection;
@@ -59,6 +57,7 @@ export class MobileLikeScroller extends HTMLElement {
     this.applyStyles();
 
     this.addEventListener('mousedown', (e) => this.touchstart(e));
+    this.handleScroll();
   }
 
   disconnectedCallback() {
@@ -84,8 +83,9 @@ export class MobileLikeScroller extends HTMLElement {
     // @ts-expect-error - webkit is not in the typings
     this.style.scrollbarWidth = 'none';
   }
+
   touchstart(e: MouseEvent) {
-    if (e.button === 0) { // Check for left click
+    if (e.button === 0 && (e.target as any)?.onclick == null) { // Check for left click
       e.preventDefault();
       this.style.cursor = 'grabbing';
       this.previousTouchX = [e.pageX, e.pageX, e.pageX];
@@ -153,7 +153,7 @@ export class MobileLikeScroller extends HTMLElement {
   }
 
   preventChildClicks() {
-    this.querySelectorAll('*').forEach((elem) => {
+    this.querySelectorAll('*:not([data-ui]):not([data-ui] *)').forEach((elem) => {
       let listener = (e: Event) => this.childclick(e);
       elem.addEventListener('click', listener, true)
       this.childrenEventListeners.push([elem, listener]);
@@ -204,6 +204,49 @@ export class MobileLikeScroller extends HTMLElement {
       this.dispatchEvent(new Event('scroll'));
     }
   }
+
+  handleScroll() {
+    this.addEventListener('customscroll', (e) => {
+      if (e instanceof CustomEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+        const axis = e.detail.axis as 'x' | 'y';
+        const amount = e.detail.amount;
+        const behavior = e.detail.behavior;
+        if (axis === 'x') {
+          this.applyScroll([amount, 0], behavior);
+        }
+        if (axis === 'y') {
+          this.applyScroll([0, amount], behavior);
+        }
+      }
+    });
+    this.querySelectorAll('*[data-scroll-axis]').forEach((elem) => elem.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const target = e.target as HTMLElement | undefined;
+      const axis = target?.dataset?.scrollAxis;
+      const amount = parseFloat(target?.dataset?.scrollAmount ?? '0');
+      const behavior = target?.dataset?.scrollBehavior;
+      if (["x", "y"].includes(axis ?? '')) {
+        e.target?.dispatchEvent(new CustomEvent('customscroll', {
+          bubbles: true, detail: { axis, amount, behavior }
+        }));
+
+      }
+    }));
+  }
+
+  /**
+   * @param scrollAmount - Array of two numbers, the first is the amount to scroll in the x direction, the second is the amount to scroll in the y direction
+   */
+  applyScroll([scrollLeft, scrollTop] = [0, 0], behavior: 'auto' | 'smooth' = 'smooth') {
+    this.scrollTo({
+      top: this.scrollTop + scrollTop,
+      left: this.scrollLeft + scrollLeft,
+      behavior,
+    });
+  };
+
 }
 
 
