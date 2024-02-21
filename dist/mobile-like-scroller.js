@@ -1,6 +1,6 @@
 var p = Object.defineProperty;
-var T = (h, o, t) => o in h ? p(h, o, { enumerable: !0, configurable: !0, writable: !0, value: t }) : h[o] = t;
-var r = (h, o, t) => (T(h, typeof o != "symbol" ? o + "" : o, t), t);
+var T = (l, o, t) => o in l ? p(l, o, { enumerable: !0, configurable: !0, writable: !0, value: t }) : l[o] = t;
+var r = (l, o, t) => (T(l, typeof o != "symbol" ? o + "" : o, t), t);
 class m {
   constructor() {
     r(this, "functionMap");
@@ -17,6 +17,7 @@ class m {
       document.removeEventListener(o.split(".")[0], this.functionMap[o]), delete this.functionMap[o];
   }
 }
+var E = ((l) => (l.X = "x", l.Y = "y", l.XY = "xy", l))(E || {});
 class d extends HTMLElement {
   constructor() {
     super();
@@ -52,7 +53,6 @@ class d extends HTMLElement {
         break;
       case "xy":
         this.style.overflowX = "auto", this.style.overflowY = "auto";
-        break;
     }
     this.style.cursor = "grab", this.style.scrollbarWidth = "none";
   }
@@ -63,11 +63,7 @@ class d extends HTMLElement {
     }, 300));
   }
   touchmove(t) {
-    if (t.buttons === 0) {
-      this.touchend();
-      return;
-    }
-    this.previousTouchX = [this.previousTouchX[1], this.previousTouchX[2], t.pageX], this.previousTouchY = [this.previousTouchY[1], this.previousTouchY[2], t.pageY], this.previousTouchTime = [this.previousTouchTime[1], this.previousTouchTime[2], Date.now()], this.direction != "y" && (this.scrollLeft -= this.previousTouchX[2] - this.previousTouchX[1]), this.direction != "x" && (this.scrollTop -= this.previousTouchY[2] - this.previousTouchY[1]), this.blockChildrenTimeout && (this.previousTouchX[2] - this.previousTouchX[1]) ** 2 + (this.previousTouchY[2] - this.previousTouchY[1]) ** 2 > 25 && this.preventChildClicks(), this.dispatchEvent(new Event("scroll"));
+    t.buttons !== 0 ? (this.previousTouchX = [this.previousTouchX[1], this.previousTouchX[2], t.pageX], this.previousTouchY = [this.previousTouchY[1], this.previousTouchY[2], t.pageY], this.previousTouchTime = [this.previousTouchTime[1], this.previousTouchTime[2], Date.now()], this.direction != "y" && (this.scrollLeft -= this.previousTouchX[2] - this.previousTouchX[1]), this.direction != "x" && (this.scrollTop -= this.previousTouchY[2] - this.previousTouchY[1]), this.blockChildrenTimeout && (this.previousTouchX[2] - this.previousTouchX[1]) ** 2 + (this.previousTouchY[2] - this.previousTouchY[1]) ** 2 > 25 && this.preventChildClicks(), this.dispatchEvent(new Event("scroll"))) : this.touchend();
   }
   touchend() {
     this.eventHandler.removeEventListener("mousemove.scroller"), this.eventHandler.removeEventListener("mouseup.scroller"), this.style.cursor = "", this.scrollAtT0 = [this.scrollLeft, this.scrollTop], this.inertialTimerInterval = setInterval(() => this.inertialmove(), 16), this.dispatchEvent(new Event("initiateinertial"));
@@ -95,43 +91,33 @@ class d extends HTMLElement {
   inertialmove() {
     var t = 0, s = 0;
     this.direction != "y" && (t = (this.previousTouchX[2] - this.previousTouchX[0]) / (this.previousTouchTime[2] - this.previousTouchTime[0]) * 1e3 / this.getBoundingClientRect().width), this.direction != "x" && (s = (this.previousTouchY[2] - this.previousTouchY[0]) / (this.previousTouchTime[2] - this.previousTouchTime[0]) * 1e3 / this.getBoundingClientRect().height);
-    var e = this.direction == "xy" ? Math.sqrt(t * t + s * s) : this.direction == "y" ? Math.abs(s) : Math.abs(t), n = [t / e, s / e];
+    var e = this.direction == "xy" ? Math.sqrt(t * t + s * s) : this.direction == "y" ? Math.abs(s) : Math.abs(t), h = [t / e, s / e];
     e = Math.min(12, Math.max(-12, 1.2 * e));
-    var i = (Date.now() - this.previousTouchTime[2]) / 1e3, v = e - 14.278 * i + 75.24 * i * i / e - 149.72 * i * i * i / e / e;
-    if (e == 0 || v <= 0 || isNaN(e))
+    var i = (Date.now() - this.previousTouchTime[2]) / 1e3;
+    if (e == 0 || e - 14.278 * i + 75.24 * i * i / e - 149.72 * i * i * i / e / e <= 0 || isNaN(e))
       clearInterval(this.inertialTimerInterval), this.inertialTimerInterval = void 0, this.dispatchEvent(new Event("scrollend"));
     else {
-      var a = this.getBoundingClientRect().width * n[0] * (e * i - 7.1397 * i * i + 25.08 * i * i * i / e - 37.43 * i * i * i * i / e / e), u = this.getBoundingClientRect().height * n[1] * (e * i - 7.1397 * i * i + 25.08 * i * i * i / e - 37.43 * i * i * i * i / e / e);
-      let c = [this.scrollWidth - this.getBoundingClientRect().width, this.scrollHeight - this.getBoundingClientRect().height], l = [Math.min(c[0], Math.max(0, this.scrollAtT0[0] - a)), Math.min(c[1], Math.max(0, this.scrollAtT0[1] - u))];
-      (l[0] == 0 || l[0] == c[0]) && (l[1] == 0 || l[1] == c[1]) && (clearInterval(this.inertialTimerInterval), this.inertialTimerInterval = void 0), this.direction != "y" && (this.scrollLeft = l[0]), this.direction != "x" && (this.scrollTop = l[1]), this.dispatchEvent(new Event("scroll"));
+      var u = this.getBoundingClientRect().width * h[0] * (e * i - 7.1397 * i * i + 25.08 * i * i * i / e - 37.43 * i * i * i * i / e / e), a = this.getBoundingClientRect().height * h[1] * (e * i - 7.1397 * i * i + 25.08 * i * i * i / e - 37.43 * i * i * i * i / e / e);
+      let c = [this.scrollWidth - this.getBoundingClientRect().width, this.scrollHeight - this.getBoundingClientRect().height], n = [Math.min(c[0], Math.max(0, this.scrollAtT0[0] - u)), Math.min(c[1], Math.max(0, this.scrollAtT0[1] - a))];
+      n[0] != 0 && n[0] != c[0] || n[1] != 0 && n[1] != c[1] || (clearInterval(this.inertialTimerInterval), this.inertialTimerInterval = void 0), this.direction != "y" && (this.scrollLeft = n[0]), this.direction != "x" && (this.scrollTop = n[1]), this.dispatchEvent(new Event("scroll"));
     }
   }
   handleScroll() {
     this.addEventListener("customscroll", (t) => {
       if (t instanceof CustomEvent) {
         t.preventDefault(), t.stopPropagation();
-        const s = t.detail.axis, e = t.detail.amount, n = t.detail.behavior;
-        s === "x" && this.applyScroll([e, 0], n), s === "y" && this.applyScroll([0, e], n);
+        const s = t.detail.axis, e = t.detail.amount, h = t.detail.behavior;
+        s === "x" && this.applyScroll([e, 0], h), s === "y" && this.applyScroll([0, e], h);
       }
     }), this.querySelectorAll("*[data-scroll-axis]").forEach((t) => t.addEventListener("click", (s) => {
-      var a, u, c, l;
+      var a, c, n, v;
       s.preventDefault(), s.stopPropagation();
-      const e = s.target, n = (a = e == null ? void 0 : e.dataset) == null ? void 0 : a.scrollAxis, i = parseFloat(((u = e == null ? void 0 : e.dataset) == null ? void 0 : u.scrollAmount) ?? "0"), v = (c = e == null ? void 0 : e.dataset) == null ? void 0 : c.scrollBehavior;
-      ["x", "y"].includes(n ?? "") && ((l = s.target) == null || l.dispatchEvent(new CustomEvent("customscroll", {
-        bubbles: !0,
-        detail: { axis: n, amount: i, behavior: v }
-      })));
+      const e = s.target, h = (a = e == null ? void 0 : e.dataset) == null ? void 0 : a.scrollAxis, i = parseFloat(((c = e == null ? void 0 : e.dataset) == null ? void 0 : c.scrollAmount) ?? "0"), u = (n = e == null ? void 0 : e.dataset) == null ? void 0 : n.scrollBehavior;
+      ["x", "y"].includes(h ?? "") && ((v = s.target) == null || v.dispatchEvent(new CustomEvent("customscroll", { bubbles: !0, detail: { axis: h, amount: i, behavior: u } })));
     }));
   }
-  /**
-   * @param scrollAmount - Array of two numbers, the first is the amount to scroll in the x direction, the second is the amount to scroll in the y direction
-   */
   applyScroll([t, s] = [0, 0], e = "smooth") {
-    this.scrollTo({
-      top: this.scrollTop + s,
-      left: this.scrollLeft + t,
-      behavior: e
-    });
+    this.scrollTo({ top: this.scrollTop + s, left: this.scrollLeft + t, behavior: e });
   }
 }
 r(d, "observedAttributes", ["data-direction"]);

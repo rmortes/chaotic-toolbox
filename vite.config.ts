@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import storylitePlugin from '@storylite/vite-plugin';
 import { glob } from 'glob'
 import dts from 'vite-plugin-dts'
+import uglify from "@lopatnov/rollup-plugin-uglify";
 
 export default defineConfig({
   plugins: [
@@ -9,6 +10,7 @@ export default defineConfig({
     storylitePlugin({
       stories: 'stories/**/*.stories.tsx', // relative to process.cwd()
     }),
+    uglify(),
   ],
   build: {
     lib: {
@@ -23,6 +25,6 @@ export default defineConfig({
           return `${name}.js`
         },
       }
-    }
+    },
   }
 })
