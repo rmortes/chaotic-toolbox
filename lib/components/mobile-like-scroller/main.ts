@@ -148,7 +148,7 @@ export class MobileLikeScroller extends HTMLElement {
 
   preventChildClicks() {
     this.querySelectorAll('*:not([data-ui]):not([data-ui] *)').forEach((elem) => {
-      let listener = (e: Event) => (e);
+      let listener = (e: Event) => this.childclick(e);
       elem.addEventListener('click', listener, true)
       this.childrenEventListeners.push([elem, listener]);
     });

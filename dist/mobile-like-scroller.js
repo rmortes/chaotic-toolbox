@@ -79,7 +79,7 @@ class d extends HTMLElement {
   }
   preventChildClicks() {
     this.querySelectorAll("*:not([data-ui]):not([data-ui] *)").forEach((t) => {
-      let s = (e) => e;
+      let s = (e) => this.childclick(e);
       t.addEventListener("click", s, !0), this.childrenEventListeners.push([t, s]);
     }), this.$BlockedInputs = [...this.querySelectorAll("input:not(:disabled)")], this.$BlockedInputs.forEach((t) => {
       t.setAttribute("disabled", "true");
